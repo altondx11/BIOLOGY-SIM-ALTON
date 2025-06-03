@@ -9,6 +9,17 @@ const FIELD_RES=32;
 const CELL_SIZE=WORLD_SIZE/FIELD_RES;
 let scale=width/WORLD_SIZE;
 
+function resizeCanvas(){
+  const avail=Math.min(window.innerWidth-520,1600);
+  canvas.width=avail;
+  canvas.height=avail*0.75;
+  width=canvas.width;
+  height=canvas.height;
+  scale=width/WORLD_SIZE;
+}
+window.addEventListener('resize',resizeCanvas);
+resizeCanvas();
+
 const bloodField=new Float32Array(FIELD_RES*FIELD_RES*2);
 const lymphField=new Float32Array(FIELD_RES*FIELD_RES*2);
 const chemField=new Float32Array(FIELD_RES*FIELD_RES);
@@ -35,9 +46,9 @@ class RBC extends Entity{
   draw(){ctx.fillStyle='red';ctx.beginPath();ctx.arc(this.x*scale,this.y*scale,this.radius*scale/10,0,Math.PI*2);ctx.fill();}}
 
 class Pathogen extends Entity{
-  constructor(){super(Math.random()*WORLD_SIZE,Math.random()*WORLD_SIZE,6,0.8);this.health=3;this.repTimer=6+Math.random()*4;}
-  step(dt){const [fx,fy]=sampleVec(bloodField,this.x,this.y);this.force(fx,fy,dt);this.force((Math.random()-0.5)*8,(Math.random()-0.5)*8,dt);this.integrate(dt);this.bounce();this.repTimer-=dt;if(this.repTimer<=0){this.repTimer=6+Math.random()*4;const n=2+Math.floor(Math.random()*4);for(let i=0;i<n;i++){const child=new Pathogen();child.x=this.x;child.y=this.y;state.pathogens.push(child);}}}
-  draw(){ctx.fillStyle='purple';ctx.beginPath();ctx.arc(this.x*scale,this.y*scale,this.radius*scale/10,0,Math.PI*2);ctx.fill();ctx.fillStyle='black';ctx.fillRect(this.x*scale-6,this.y*scale-10,12,3);ctx.fillStyle='lime';ctx.fillRect(this.x*scale-6,this.y*scale-10,12*(this.health/3),3);}}
+  constructor(){super(Math.random()*WORLD_SIZE,Math.random()*WORLD_SIZE,6,0.8);this.health=3;this.repTimer=6+Math.random()*4;this.hue=Math.random()*360;}
+  step(dt){const [fx,fy]=sampleVec(bloodField,this.x,this.y);this.force(fx,fy,dt);this.force((Math.random()-0.5)*8,(Math.random()-0.5)*8,dt);this.integrate(dt);this.bounce();this.repTimer-=dt;if(this.repTimer<=0){this.repTimer=6+Math.random()*4;const n=2+Math.floor(Math.random()*4);for(let i=0;i<n;i++){const child=new Pathogen();child.x=this.x;child.y=this.y;child.hue=this.hue+(Math.random()-0.5)*20;state.pathogens.push(child);}}}
+  draw(){ctx.fillStyle=`hsl(${this.hue},60%,50%)`;ctx.beginPath();ctx.arc(this.x*scale,this.y*scale,this.radius*scale/10,0,Math.PI*2);ctx.fill();ctx.fillStyle='black';ctx.fillRect(this.x*scale-6,this.y*scale-10,12,3);ctx.fillStyle='lime';ctx.fillRect(this.x*scale-6,this.y*scale-10,12*(this.health/3),3);}}
 
 class Neutrophil extends Entity{
   constructor(){super(Math.random()*WORLD_SIZE,Math.random()*WORLD_SIZE,10,1.4);this.explode=null;}
@@ -55,6 +66,16 @@ class TCell extends Entity{
   step(dt){const [fxf,fyf]=sampleVec(bloodField,this.x,this.y);let fx=fxf*0.4,fy=fyf*0.4;const target=nearestTagged(this);if(target){const a=Math.atan2(target.y-this.y,target.x-this.x);fx+=Math.cos(a)*80;fy+=Math.sin(a)*80;}else{const [cx,cy]=gradChem(this.x,this.y);fx+=cx*80;fy+=cy*80;}this.force(fx,fy,dt);this.force((Math.random()-0.5)*8,(Math.random()-0.5)*8,dt);for(const p of state.pathogens){if(p.flagged&&distance(this,p)<this.radius+p.radius){p.health=0;}}this.integrate(dt);this.bounce();}
   draw(){ctx.fillStyle='purple';ctx.beginPath();ctx.arc(this.x*scale,this.y*scale,this.radius*scale/10,0,Math.PI*2);ctx.fill();}}
 
+class BCell extends Entity{
+  constructor(){super(Math.random()*WORLD_SIZE,Math.random()*WORLD_SIZE,9,1.1);this.cool=0;}
+  step(dt){const [fxf,fyf]=sampleVec(bloodField,this.x,this.y);let fx=fxf*0.4,fy=fyf*0.4;const [cx,cy]=gradChem(this.x,this.y);fx+=cx*50;fy+=cy*50;this.force(fx,fy,dt);this.force((Math.random()-0.5)*8,(Math.random()-0.5)*8,dt);this.cool-=dt;if(this.cool<=0){const ab=new Antibody(this.x,this.y);state.antibodies.push(ab);this.cool=4;}this.integrate(dt);this.bounce();}
+  draw(){ctx.fillStyle='cyan';ctx.beginPath();ctx.arc(this.x*scale,this.y*scale,this.radius*scale/10,0,Math.PI*2);ctx.fill();}}
+
+class Antibody extends Entity{
+  constructor(x,y){super(x,y,3,0.5);this.life=10;}
+  step(dt){const target=nearestEntity(this,state.pathogens);if(target){const a=Math.atan2(target.y-this.y,target.x-this.x);this.force(Math.cos(a)*50,Math.sin(a)*50,dt);}this.force((Math.random()-0.5)*5,(Math.random()-0.5)*5,dt);this.integrate(dt);this.life-=dt;if(target&&distance(this,target)<target.radius+this.radius){target.flagged=true;this.life=0;}}
+  draw(){ctx.fillStyle='orange';ctx.beginPath();ctx.arc(this.x*scale,this.y*scale,this.radius*scale/10,0,Math.PI*2);ctx.fill();}}
+
 class Particle{constructor(x,y,color){this.x=x;this.y=y;this.vx=(Math.random()-0.5)*20;this.vy=(Math.random()-0.5)*20;this.life=2;color&&(this.color=color);}draw(){ctx.fillStyle=this.color;ctx.fillRect(this.x*scale,this.y*scale,2,2);}step(dt){this.x+=this.vx*dt;this.y+=this.vy*dt;this.life-=dt;}}
 
 function particleBurst(x,y,color){for(let i=0;i<10;i++)state.particles.push(new Particle(x,y,color));}
@@ -65,21 +86,22 @@ function distance(a,b){return Math.hypot(a.x-b.x,a.y-b.y);}
 function nearestEntity(ent,list){let best=null;let bestd=Infinity;for(const o of list){const d=distance(ent,o);if(d<bestd){bestd=d;best=o;}}return best;}
 function nearestTagged(t){let best=null;let bestd=Infinity;for(const p of state.pathogens){if(p.flagged){const d=distance(t,p);if(d<bestd){bestd=d;best=p;}}}return best;}
 
-const state={running:false,lastTime:0,rbcs:[],pathogens:[],neutrophils:[],macrophages:[],tcells:[],particles:[],walls:[{side:'top',hp:100},{side:'bottom',hp:100},{side:'left',hp:100},{side:'right',hp:100}],record:[],speed:1};
+const state={running:false,lastTime:0,rbcs:[],pathogens:[],neutrophils:[],macrophages:[],tcells:[],bcells:[],antibodies:[],particles:[],walls:[{side:'top',hp:100},{side:'bottom',hp:100},{side:'left',hp:100},{side:'right',hp:100}],record:[],speed:1,memory:false};
 
 function damageWall(side){const wall=state.walls.find(w=>w.side===side);if(!wall)return;wall.hp-=1;chemDeposit(WORLD_SIZE/2,WORLD_SIZE/2,2);if(wall.hp<=0){wall.hp=0;}}
 
 function drawWalls(){ctx.strokeStyle='gray';ctx.lineWidth=5*scale;ctx.strokeRect(0,0,width,height);}
 
-function updateEntities(arr,dt){for(let i=arr.length-1;i>=0;i--){arr[i].step(dt);if(arr[i].life<=0){arr.splice(i,1);} }}
+function updateEntities(arr,dt){for(let i=arr.length-1;i>=0;i--){arr[i].step(dt);arr[i].life<=0&&arr.splice(i,1);} }
 
-function gameStep(dt){state.record.push({t:state.lastTime,path:state.pathogens.length});updateEntities(state.rbcs,dt);updateEntities(state.pathogens,dt);updateEntities(state.neutrophils,dt);updateEntities(state.macrophages,dt);updateEntities(state.tcells,dt);updateEntities(state.particles,dt);for(const p of state.pathogens){if(p.health<=0){p.flagged=true;particleBurst(p.x,p.y,'orange');state.pathogens.splice(state.pathogens.indexOf(p),1);}}}
+function gameStep(dt){state.record.push({t:state.lastTime,path:state.pathogens.length});updateEntities(state.rbcs,dt);updateEntities(state.pathogens,dt);updateEntities(state.neutrophils,dt);updateEntities(state.macrophages,dt);updateEntities(state.tcells,dt);updateEntities(state.bcells,dt);updateEntities(state.antibodies,dt);updateEntities(state.particles,dt);for(const p of state.pathogens){if(p.health<=0){p.flagged=true;particleBurst(p.x,p.y,'orange');state.pathogens.splice(state.pathogens.indexOf(p),1);}}
+  if(state.pathogens.length===0&&state.bcells.length>0&&!state.memory){state.memory=true;}}
 
-function draw(){ctx.clearRect(0,0,width,height);drawWalls();for(const a of state.rbcs)a.draw();for(const a of state.pathogens)a.draw();for(const a of state.neutrophils)a.draw();for(const a of state.macrophages)a.draw();for(const a of state.tcells)a.draw();for(const a of state.particles)a.draw();}
+function draw(){ctx.clearRect(0,0,width,height);drawWalls();for(const a of state.rbcs)a.draw();for(const a of state.pathogens)a.draw();for(const a of state.neutrophils)a.draw();for(const a of state.macrophages)a.draw();for(const a of state.tcells)a.draw();for(const a of state.bcells)a.draw();for(const a of state.antibodies)a.draw();for(const a of state.particles)a.draw();updateStats();}
 
 function loop(time){if(!state.running){state.lastTime=time;return;}const dt=(time-state.lastTime)/1000*state.speed;state.lastTime=time;gameStep(dt);draw();requestAnimationFrame(loop);}
 
-function init(){scale=canvas.width/WORLD_SIZE;for(let i=0;i<40;i++)state.rbcs.push(new RBC());for(let i=0;i<2;i++)state.neutrophils.push(new Neutrophil());for(let i=0;i<1;i++)state.macrophages.push(new Macrophage());for(let i=0;i<1;i++)state.tcells.push(new TCell());draw();}
+function init(){scale=canvas.width/WORLD_SIZE;for(let i=0;i<40;i++)state.rbcs.push(new RBC());for(let i=0;i<2;i++)state.neutrophils.push(new Neutrophil());for(let i=0;i<1;i++)state.macrophages.push(new Macrophage());for(let i=0;i<1;i++)state.tcells.push(new TCell());for(let i=0;i<1;i++)state.bcells.push(new BCell());draw();}
 
 init();
 
@@ -88,15 +110,29 @@ function play(){if(!state.running){state.running=true;requestAnimationFrame(loop
 function pause(){state.running=false;}
 function stepFrame(){if(!state.running){gameStep(1/60);draw();}}
 
+function spawnType(type,x,y){let obj=null;switch(type){case 'Pathogen':obj=new Pathogen();state.pathogens.push(obj);break;case 'Neutrophil':obj=new Neutrophil();state.neutrophils.push(obj);break;case 'Macrophage':obj=new Macrophage();state.macrophages.push(obj);break;case 'TCell':obj=new TCell();state.tcells.push(obj);break;case 'BCell':obj=new BCell();state.bcells.push(obj);break;}if(obj){obj.x=x;obj.y=y;}}
+
+// drag drop spawn
+document.querySelectorAll('.spawnItem').forEach(it=>{
+  it.addEventListener('dragstart',e=>{e.dataTransfer.setData('text/plain',it.dataset.type);});
+});
+canvas.addEventListener('dragover',e=>e.preventDefault());
+canvas.addEventListener('drop',e=>{e.preventDefault();const type=e.dataTransfer.getData('text/plain');const rect=canvas.getBoundingClientRect();const x=(e.clientX-rect.left)/scale;const y=(e.clientY-rect.top)/scale;spawnType(type,x,y);});
+
 document.getElementById('playBtn').onclick=()=>{state.running?pause():play();};
 document.getElementById('stepBtn').onclick=stepFrame;
 document.getElementById('speedSelect').onchange=e=>{state.speed=parseFloat(e.target.value);};
-document.getElementById('sizeSlider').oninput=e=>{const s=parseInt(e.target.value);canvas.width=s;canvas.height=s;width=s;height=s;scale=width/WORLD_SIZE;draw();};
+document.getElementById('sizeSlider').oninput=e=>{const s=parseInt(e.target.value);canvas.width=s;canvas.height=s*0.75;width=s;height=s*0.75;scale=width/WORLD_SIZE;draw();};
+
+document.getElementById('exportBtn').onclick=exportData;
+
+function updateStats(){const charts=document.getElementById('charts');charts.innerHTML=`RBC:${state.rbcs.length}<br>Path:${state.pathogens.length}<br>N:${state.neutrophils.length}<br>M:${state.macrophages.length}<br>T:${state.tcells.length}<br>B:${state.bcells.length}<br>Ab:${state.antibodies.length}`;}
+
 canvas.addEventListener('pointermove',e=>{
   const rect=canvas.getBoundingClientRect();
   const x=(e.clientX-rect.left)/scale; const y=(e.clientY-rect.top)/scale;
   let found=null;
-  const all=[...state.rbcs,...state.pathogens,...state.neutrophils,...state.macrophages,...state.tcells];
+  const all=[...state.rbcs,...state.pathogens,...state.neutrophils,...state.macrophages,...state.tcells,...state.bcells,...state.antibodies];
   for(const obj of all){ if(distance({x,y},obj)<obj.radius){ found=obj; break; } }
   const tip=document.getElementById('tooltip');
   if(found){
@@ -126,5 +162,3 @@ function exportData(){
   a.download='simulation.csv';
   a.click();
 }
-
-document.getElementById('exportBtn').onclick=exportData;
