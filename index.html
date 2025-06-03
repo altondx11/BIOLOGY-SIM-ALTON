@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Biology Sim</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="hud">
+  <div id="topBar">
+    <button id="playBtn">Play</button>
+    <button id="stepBtn">Step</button>
+    <select id="speedSelect">
+      <option value="1">1×</option>
+      <option value="2">2×</option>
+      <option value="4">4×</option>
+    </select>
+    <button id="settingsBtn">⚙</button>
+  </div>
+  <div id="metrics"></div>
+</div>
+<canvas id="simCanvas" width="800" height="800"></canvas>
+<div id="legend" class="hidden"></div>
+<div id="toolbar">
+  <div id="quickControls">
+    <button id="trashBtn">🗑</button>
+    <button id="syringeBtn">💉</button>
+    <button id="shieldBtn">🛡</button>
+  </div>
+  <button id="spawnBtn">＋</button>
+</div>
+<div id="tooltip" class="hidden"></div>
+<button id="exportBtn">Export Data</button>
+<div id="settings" class="hidden">
+  <label>Canvas Size <input type="range" id="sizeSlider" min="400" max="1200" value="800"></label>
+  <label><input type="checkbox" id="labelToggle" checked> Show Labels</label>
+  <label><input type="checkbox" id="soundToggle"> Sound</label>
+  <label><input type="checkbox" id="fpsToggle"> Show FPS</label>
+  <button id="closeSettings">Close</button>
+</div>
+<div id="spawnMenu" class="hidden">
+  <button data-spawn="Pathogen">Pathogen</button>
+  <button data-spawn="Neutrophil">Neutrophil</button>
+  <button data-spawn="Macrophage">Macrophage</button>
+  <button data-spawn="TCell">T-Cell</button>
+  <button id="closeSpawn">Close</button>
+</div>
+<div id="tutorial" class="hidden"></div>
+<script src="main.js"></script>
+</body>
+</html>

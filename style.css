@@ -1,0 +1,70 @@
+body {
+  font-family: sans-serif;
+  background: #f0f0f0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+#hud {
+  width: 800px;
+  display: flex;
+  justify-content: space-between;
+  margin: 10px;
+}
+#topBar button,
+#topBar select {
+  margin-right: 5px;
+}
+canvas {
+  border: 10px solid #999;
+  background: #fff;
+  display: block;
+}
+.hidden {
+  display: none;
+}
+#legend {
+  position: absolute;
+  right: 0;
+  top: 0;
+  width: 200px;
+  background: rgba(255,255,255,0.9);
+  border-left: 1px solid #ccc;
+  height: 100%;
+  overflow-y: auto;
+  padding: 5px;
+}
+#toolbar {
+  width: 800px;
+  display: flex;
+  justify-content: space-between;
+  margin-top: 5px;
+}
+#quickControls button {
+  margin-right: 5px;
+}
+#tooltip {
+  position: absolute;
+  pointer-events: none;
+  background: rgba(0,0,0,0.7);
+  color: #fff;
+  padding: 4px 6px;
+  border-radius: 4px;
+  font-size: 12px;
+}
+#metrics {
+  font-size: 14px;
+}
+#settings {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  background: #fff;
+  padding: 10px;
+  border: 1px solid #ccc;
+}
+#exportBtn {
+  margin-top: 5px;
+}
