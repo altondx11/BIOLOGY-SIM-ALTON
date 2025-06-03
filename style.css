@@ -1,0 +1,15 @@
+body {
+  font-family: sans-serif;
+  text-align: center;
+  background: #f0f0f0;
+}
+#controls {
+  margin-bottom: 10px;
+}
+#simCanvas {
+  border: 10px solid #999;
+  background: #fff;
+}
+#stats {
+  margin-top: 10px;
+}
