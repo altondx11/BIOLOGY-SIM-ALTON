@@ -1,3 +1,4 @@
+/* FEATURE: Global UI styling for the simulation */
 body {
   font-family: sans-serif;
   background: #f0f0f0;
@@ -19,6 +20,7 @@ body {
 #topBar select {
   margin-right: 5px;
 }
+/* FEATURE: Drag-and-drop spawn palette items */
 #spawnPalette {
   display: flex;
   flex-wrap: wrap;
@@ -49,6 +51,7 @@ body {
   overflow-y: auto;
   padding: 5px;
 }
+/* FEATURE: Bottom toolbar with tool icons and undo/redo */
 #bottomToolbar {
   width: 1280px;
   display: flex;
@@ -58,6 +61,7 @@ body {
 #quickControls button {
   margin-right: 5px;
 }
+/* FEATURE: Floating tooltip for cell stats */
 #tooltip {
   position: absolute;
   pointer-events: none;
@@ -70,6 +74,7 @@ body {
 #metrics {
   font-size: 14px;
 }
+/* FEATURE: Settings pop-up for customizing canvas */
 #settings {
   position: absolute;
   left: 50%;

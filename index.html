@@ -1,3 +1,4 @@
+<!-- FEATURE: Large 1280x960 simulation canvas with responsive scaling -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -9,6 +10,7 @@
 <body>
 <div id="container">
   <div id="controlPanel">
+    <!-- FEATURE: Control panel with play/pause, step and speed selector -->
     <div id="topBar">
       <button id="playBtn">Play</button>
       <button id="stepBtn">Step</button>
@@ -20,6 +22,7 @@
       </select>
       <button id="settingsBtn">⚙</button>
     </div>
+    <!-- FEATURE: Drag-and-drop spawn palette for cells and pathogens -->
     <div id="spawnPalette">
       <div class="spawnItem" draggable="true" data-type="Pathogen">🦠</div>
       <div class="spawnItem" draggable="true" data-type="Neutrophil">⚪</div>
@@ -27,6 +30,7 @@
       <div class="spawnItem" draggable="true" data-type="TCell">🟣</div>
       <div class="spawnItem" draggable="true" data-type="BCell">🔵</div>
     </div>
+    <!-- FEATURE: Preset scenario buttons -->
     <div id="presets">
       <button data-preset="wound">Open Wound</button>
       <button data-preset="airway">Airway Virus</button>
@@ -34,11 +38,13 @@
     </div>
   </div>
   <canvas id="simCanvas" width="1280" height="960"></canvas>
+  <!-- FEATURE: Stats and legend panel with real-time charts -->
   <div id="statsPanel">
     <div id="charts"></div>
     <div id="legend" class="hidden"></div>
   </div>
 </div>
+<!-- FEATURE: Bottom toolbar with actions and undo/redo -->
 <div id="bottomToolbar">
   <div id="quickControls">
     <button id="trashBtn">🗑</button>
@@ -51,7 +57,9 @@
   <button id="spawnBtn">＋</button>
   <button id="exportBtn">Export Data</button>
 </div>
+<!-- FEATURE: Floating tooltip showing live cell data -->
 <div id="tooltip" class="hidden"></div>
+<!-- FEATURE: Settings dialog for canvas size and options -->
 <div id="settings" class="hidden">
   <label>Canvas Size <input type="range" id="sizeSlider" min="600" max="1600" value="1280"></label>
   <label><input type="checkbox" id="labelToggle" checked> Show Labels</label>
